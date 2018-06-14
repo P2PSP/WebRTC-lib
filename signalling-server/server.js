@@ -5,7 +5,7 @@ var server = http.createServer(function(request, response) {
 
 });
 server.listen(9033, function() { 
-  console.log('Listening on port 9035');
+  console.log('Listening on port 9033');
 });
 
 //create the server
@@ -18,21 +18,23 @@ var splitter;
 wsServer.on('request', function(request) {
   var connection = request.accept(null, request.origin);
   console.log(request);
-  // all messages from peers here.     
+  // all messages from users here.     
   connection.on('message', function(message) {  
        //console.log(message.utf8Data);      
        var msg = JSON.parse(message.utf8Data);
        console.log(' parsed message ' + msg);
        //Register peer or splitter for the team
-       if(msg.addSplitter || msg.addPeer) {
-           var Id = msg.splitterId || msg.addPeer;
-           console.log(Id);
+       if(msg.addSplitter) {
+           console.log('splitter added');
            //store websocket connection
-           teamMembers[Id] = connection;
+           teamMembers[msg.splitterId] = connection;
+       }
+       else if(msg.addPeer) {  
+           console.log('peer joins the team');
+           teamMembers[msg.peerId] = connection;
        }
        //Signalling message to be relayed to the receiver
        else {
-         console.log(msg);
          var receiver = msg.receiverId;
          console.log(receiver);
          console.log(teamMembers[receiver])
